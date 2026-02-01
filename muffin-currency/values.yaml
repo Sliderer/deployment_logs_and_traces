@@ -1,0 +1,37 @@
+muffinCurrency:
+  deployment:
+    replicaCount: 2
+
+  image:
+    name: sliderer/muffin-currency:1.0.2
+
+  env:
+    ZIPKIN_BASE_URL: "http://zipkin.default.svc.cluster.local:9411"
+
+  service:
+    type: ClusterIP
+    ports:
+      default:
+        protocol: TCP
+        port: 8083
+        targetPort: 8080
+
+  pod:
+    livenessProbe:
+      httpGet:
+        path: /rate?from=PLAIN&to=CHOKOLATE
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /rate?from=PLAIN&to=CHOKOLATE
+        port: 8080
+      initialDelaySeconds: 2
+      periodSeconds: 5
+    ports:
+      default:
+        containerPort: 8080
+        nodePort: 8081
+
+

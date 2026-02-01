@@ -1,0 +1,60 @@
+muffinWallet:
+  deployment:
+    replicaCount: 2
+
+  image:
+    name: aadan1lov/muffin-wallet:1.1.0
+    imagePullPolicy: Always
+
+  service:
+    type: NodePort
+    ports:
+      default:
+        protocol: TCP
+        port: 80
+        targetPort: 8081
+
+  pod:
+    livenessProbe:
+      httpGet:
+        path: /actuator/health/liveness
+        port: 8081
+      initialDelaySeconds: 30
+      periodSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /actuator/health/readiness
+        port: 8081
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    ports:
+      default:
+        containerPort: 8081
+
+  secrets:
+    data:
+      SPRING_DATASOURCE_PASSWORD: bXVmZmluLXdhbGxldA==
+
+  configMap:
+    env:
+      JDK_JAVA_OPTIONS: -Dspring.config.additional-location=/app/config/application.yaml
+
+  ingress:
+    ingressClassName: nginx
+    host: muffin-wallet.com
+
+  currency:
+    service:
+      name: muffin-currency-currency 
+      port: 8083
+
+  database:
+    host: host.minikube.internal
+    port: 5432
+    name: muffin_wallet 
+    username: muffin-wallet
+
+  zipkin:
+    enabled: true
+    endpoint: http://zipkin.default.svc.cluster.local:9411/api/v2/spans
+    baseUrl: http://zipkin.default.svc.cluster.local:9411

@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "muffin-wallet.common-name" . }}
+spec:
+  selector:
+    app: {{ include "muffin-wallet.common-name" . }}
+  ports:
+    {{- range $name, $args := .Values.muffinWallet.service.ports }}
+    - protocol: {{ $args.protocol }}
+      port: {{ $args.port }}
+      targetPort: {{ $args.targetPort }}
+    {{- end }}
+  type: {{ .Values.muffinWallet.service.type }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "muffin-wallet.common-name" . }}
+  labels:
+    app: {{ include "muffin-wallet.common-name" . }}
+spec:
+  replicas: {{ .Values.muffinWallet.deployment.replicaCount }}
+  selector:
+    matchLabels:
+        {{- include "muffin-wallet.deployment-labels" . | nindent 8 }}
+  template:
+    metadata:
+      labels:
+        {{- include "muffin-wallet.deployment-labels" . | nindent 8 }}
+    spec:
+      volumes:
+        {{- include "muffin-wallet.volumes" . | nindent 7 }}
+      containers:
+        - name: {{ include "muffin-wallet.common-name" . }}
+          image: {{ .Values.muffinWallet.image.name }}
+          imagePullPolicy: {{ .Values.muffinWallet.image.imagePullPolicy }}
+          ports:
+            {{- range $name, $args := .Values.muffinWallet.pod.ports }}
+            - containerPort: {{ $args.containerPort }}
+            {{- end}}
+          volumeMounts:
+            {{- include "muffin-wallet.volume-mounts" . | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "muffin-wallet.common-name" . }}-secret
+            - configMapRef:
+                name: {{ include "muffin-wallet.common-name" . }}-env
+          livenessProbe:
+            {{- include "muffin-wallet.muffin-livenessProbe" . | nindent 12 }}
+          readinessProbe:
+            {{- include "muffin-wallet.muffin-readinessProbe" . | nindent 12 }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "muffin-wallet.common-name" . }}-secret
+data:
+  {{- range $name, $value := .Values.muffinWallet.secrets.data }}
+  {{$name}}: {{ $value }}
+  {{- end}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "muffin-wallet.common-name" . }}-env
+data:
+  {{- range $name, $value := .Values.muffinWallet.configMap.env }}
+  {{ $name }}: {{ $value | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "muffin-wallet.common-name" . }}
+data:
+  {{ include "muffin-wallet.configMap-data" . }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "muffin-wallet.common-name" . }}
+spec:
+  ingressClassName: {{ .Values.muffinWallet.ingress.ingressClassName }}
+  rules:
+    - host: {{ .Values.muffinWallet.ingress.host }}
+      http:
+        paths:
+          {{- include "muffin-wallet.ingress-paths" . | nindent 10 }}

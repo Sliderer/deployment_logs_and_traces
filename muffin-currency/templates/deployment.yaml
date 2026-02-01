@@ -1,0 +1,53 @@
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "muffin-currency.common-name" . }}
+  labels:
+    {{- include "muffin-currency.deployment-labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.muffinCurrency.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "muffin-currency.muffin-match-labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "muffin-currency.deployment-labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ include "muffin-currency.common-name" . }}
+        image: {{ .Values.muffinCurrency.image.name }}
+        {{- with .Values.muffinCurrency.env }}
+        env:
+          {{- range $key, $value := . }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+        ports:
+          {{- range $name, $args := .Values.muffinCurrency.pod.ports }}
+          - containerPort: {{ $args.containerPort }}
+          {{- end}}
+        livenessProbe:
+          {{- include "muffin-currency.muffin-livenessProbe" . | nindent 10 }}
+        readinessProbe:
+          {{- include "muffin-currency.muffin-readinessProbe" . | nindent 10 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "muffin-currency.common-name" . }}
+spec:
+  selector:
+    {{- include "muffin-currency.muffin-match-labels" . | nindent 4 }}
+  ports:
+    {{- range $name, $args := .Values.muffinCurrency.service.ports }}
+    - protocol: {{ $args.protocol }}
+      port: {{ $args.port }}
+      targetPort: {{ $args.targetPort }}
+      nodePort: {{ $args.nodePort }}
+    {{- end }}
+  type: {{ .Values.muffinCurrency.service.type }}

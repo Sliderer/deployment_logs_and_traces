@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'muffin-cluster'
+    environment: 'development'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'muffin-wallet'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['muffin-wallet.com']
+        labels:
+          service: 'muffin-wallet'
+          application: 'wallet'
+          method: 'direct'
+    scrape_interval: 1s
+    scrape_timeout: 1s
+
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['localhost:9187']
+        labels:
+          service: 'postgresql'
+          database: 'muffin_wallet'
+    scrape_interval: 15s
