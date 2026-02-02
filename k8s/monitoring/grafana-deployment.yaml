@@ -28,8 +28,6 @@ spec:
               value: "3000"
             - name: GF_PATHS_PROVISIONING
               value: /etc/grafana/provisioning
-            - name: GF_AUTH_ANONYMOUS_ENABLED
-              value: "false"
             - name: GF_SECURITY_ADMIN_USER
               value: admin
             - name: GF_SECURITY_ADMIN_PASSWORD
@@ -38,12 +36,27 @@ spec:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: dashboards-json
+              mountPath: /etc/grafana/dashboards-json
+              readOnly: true
             - name: data
               mountPath: /var/lib/grafana
       volumes:
         - name: datasources
           configMap:
             name: grafana-datasources
+            defaultMode: 0644
+        - name: dashboards-provider
+          configMap:
+            name: grafana-dashboards-provider
+            defaultMode: 0644
+        - name: dashboards-json
+          configMap:
+            name: grafana-dashboards
+            defaultMode: 0644
         - name: data
           hostPath:
             path: /data/grafana

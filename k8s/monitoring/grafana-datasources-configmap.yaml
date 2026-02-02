@@ -4,13 +4,16 @@ metadata:
   name: grafana-datasources
   namespace: default
 data:
-  loki.yaml: |
+  datasources.yaml: |
     apiVersion: 1
     datasources:
       - name: Loki
         type: loki
         uid: loki
-        access: proxy
         url: http://loki.default.svc.cluster.local:3100
-        isDefault: true
-        editable: false
+        access: proxy
+      - name: Zipkin
+        type: zipkin
+        uid: zipkin
+        url: http://zipkin.default.svc.cluster.local:9411
+        access: proxy
