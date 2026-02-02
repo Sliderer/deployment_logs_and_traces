@@ -1,6 +1,6 @@
 muffinCurrency:
   deployment:
-    replicaCount: 2
+    replicaCount: 1
 
   image:
     name: sliderer/muffin-currency:1.0.2

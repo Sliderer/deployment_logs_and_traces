@@ -84,6 +84,8 @@ application.yaml: |
     spring:
         application:
             name: muffin-wallet
+        zipkin:
+            base-url: {{ .Values.muffinWallet.zipkin.baseUrl | quote }}
         datasource:
             url: jdbc:postgresql://{{ .Values.muffinWallet.database.host }}:{{ .Values.muffinWallet.database.port }}/{{ .Values.muffinWallet.database.name }}
             username: {{ .Values.muffinWallet.database.username }}
@@ -96,7 +98,7 @@ application.yaml: |
         endpoints:
             web:
                 exposure:
-                    include: health, info, prometheus
+                    include: health, info, prometheus, tracing
         endpoint:
             health:
                 probes:
@@ -114,7 +116,6 @@ application.yaml: |
                 probability: 1.0
             service-name: muffin-wallet
         zipkin:
-            base-url: {{ .Values.muffinWallet.zipkin.baseUrl | quote }}
-            sender:
-                type: web
+            tracing:
+                endpoint: {{ .Values.muffinWallet.zipkin.endpoint | quote }}
 {{- end }}

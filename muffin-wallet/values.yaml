@@ -1,6 +1,6 @@
 muffinWallet:
   deployment:
-    replicaCount: 2
+    replicaCount: 1
 
   image:
     name: aadan1lov/muffin-wallet:1.1.0
